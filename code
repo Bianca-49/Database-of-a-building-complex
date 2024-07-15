@@ -1,0 +1,441 @@
+#include<iostream>
+#include<vector>
+#include<cmath>
+#include<string>
+#include<algorithm>
+#include<set>
+using namespace std;
+
+class Person {
+public:
+    string mName;
+    uint16_t mAge;
+    double mSalary;
+    Person(){
+        mName="";
+        mAge=0;
+        mSalary=0;
+
+    }
+    Person(string name, uint16_t age,double salary){
+        mName=name;
+        mAge=age;
+        mSalary=salary;
+    }
+    bool operator ==(const Person & op)const{
+        if(mName==op.mName&&mAge==op.mAge&&mSalary==op.mSalary)
+            return true;
+        return false;
+    }
+    bool operator <(const Person & op)const{
+        if(mName<op.mName)
+            return true;
+        return false;
+    }
+
+};
+class Building{
+public:
+    string mBuildingName;
+    string mType;
+    Person mCoordinator;
+    vector<Person>mEmployees;
+    vector<Person> mCitizens;
+
+    Building(string building_name, string type):mBuildingName(building_name),mType(type){
+    }
+    virtual void add(const Person & op)=0;
+   
+    virtual void remove(const Person & op)=0;
+    virtual Building * operator +(const Person & op)=0;
+    virtual Building * operator -(const Person & op){return nullptr;}
+    virtual Building * operator -(){return nullptr;}
+    string getBuildingName()const{
+        return mBuildingName;
+    }
+    string getType()const{
+        return mType;
+    }
+    uint16_t getEmployeesSize()const{
+        return mEmployees.size();
+    }
+    uint16_t getCitizensSize()const{
+        return mCitizens.size();
+    }
+    Person getEmployee (uint16_t index)const{
+        return mEmployees[index];
+    }
+    Person getCitizen (uint16_t index)const{
+        return mCitizens[index];
+    }
+    Person getCoordinator()const{
+        return mCoordinator;
+    }
+};
+class CityHall:public Building{
+public:
+    CityHall(string buildingName) : Building(buildingName,"CityHall") {
+        mCitizens.clear();
+        mCoordinator=Person();
+    }
+    virtual Building * operator +(const Person & op){
+        if(mCoordinator==Person())
+            mCoordinator=op;
+        return this;
+    }
+    
+    virtual Building * operator -(){
+        mCoordinator=Person();
+        return this;
+    }
+    virtual void add(const Person & op){
+        mCitizens.push_back(op);
+
+    }
+    virtual void remove(const Person & op){
+        for(uint16_t i=0;i<getCitizensSize();i++)
+            if(mCitizens[i]==op)
+                mCitizens.erase(mCitizens.begin()+i);
+    }
+};
+class Hospital :public Building{
+public:
+    Hospital(string buildingName) : Building(buildingName, "Hospital") {
+        mCitizens.clear();
+        mEmployees.clear();
+    }
+    virtual Building * operator +(const Person & op){
+        mEmployees.push_back(op);
+        return this;
+    }
+   
+    virtual Building * operator-(const Person & op){
+        for(uint16_t i=0;i<getEmployeesSize();i++)
+            if(mEmployees[i]==op)
+                mEmployees.erase(mEmployees.begin()+i);
+        return this;
+    }
+    virtual void add(const Person & op){
+        mCitizens.push_back(op);
+
+    }
+    virtual void remove(const Person & op){
+        for(uint16_t i=0;i<getCitizensSize();i++)
+            if(mCitizens[i]==op){
+                mCitizens.erase(mCitizens.begin()+i);
+            }
+           
+    }
+};
+class PoliceStation:public Building{
+public:
+    PoliceStation(string buildingName) : Building(buildingName,"PoliceStation") {
+        mCitizens.clear();
+        mEmployees.clear();
+    }
+    virtual Building * operator +(const Person & op){
+        mEmployees.push_back(op);
+        return this;
+    }
+    
+    virtual Building * operator -(const Person & op){
+        for(uint16_t i=0;i<getEmployeesSize();i++)
+            if(mEmployees[i]==op){
+                mEmployees.erase(mEmployees.begin()+i);
+            }
+        return this;
+    }
+    virtual void add(const Person & op){
+        mCitizens.push_back(op);
+
+    }
+    virtual void remove(const Person & op){
+        for(uint16_t i=0;i<getCitizensSize();i++)
+            if(mCitizens[i]==op)
+                mCitizens.erase(mCitizens.begin()+i);
+    }
+};
+class House:public Building{
+private:
+    uint16_t mMaxNumber;
+public:
+    House(string buildingName, uint16_t max_nr) : Building(buildingName,"House"),mMaxNumber(max_nr) {
+        mCitizens.clear();
+        mCoordinator=Person();
+    }
+    virtual Building * operator +(const Person & op){
+        if(mCoordinator==Person())
+            mCoordinator=op;
+        return this;
+    }
+    virtual Building * operator -(){
+        mCoordinator=Person();
+        return this;
+    }
+
+    virtual void add(const Person & op){
+        if(getCitizensSize()+1<mMaxNumber)
+            mCitizens.push_back(op);
+        
+
+    }
+    virtual void remove(const Person & op){
+        if(op.mAge>=18){
+            for(uint16_t i=0;i<getCitizensSize();i++)
+                if(mCitizens[i]==op)
+                    mCitizens.erase(mCitizens.begin()+i);}
+    }
+};
+class Block:public Building{
+private:
+    uint16_t mMaxNumberPerFloor,numar_etaje;
+public:
+    Block(string buildingName,uint16_t nr_etaje, uint16_t max) : Building(buildingName,"Block"),numar_etaje(nr_etaje),mMaxNumberPerFloor(max) {
+        mCitizens.clear();
+        mCoordinator=Person();
+        for(uint16_t i=0;i<(mMaxNumberPerFloor*numar_etaje);i++)
+            mCitizens.push_back(Person());
+    }
+    virtual Building * operator +(const Person & op){
+        if(mCoordinator==Person())
+            mCoordinator=op;
+        return this;
+    }
+    virtual Building * operator -(){
+        mCoordinator=Person();
+        return this;
+    }
+    virtual void add(const Person & op){
+        int ok=1;
+        for(uint16_t i=0;i<getCitizensSize();i++)
+            if(mCitizens[i]==Person()&&ok==1){
+                mCitizens.push_back(op);
+                ok=0;
+                
+            }
+
+    }
+    virtual void remove(const Person & op){
+        if(op.mAge>=18)
+            for(uint16_t i=0;i<getCitizensSize();i++)
+                if((mCitizens[i]==(op))==true){
+                    mCitizens.erase(mCitizens.begin()+i);
+                    mCitizens.push_back(Person());
+                }
+
+    }
+
+};
+int main(){
+    string actiune;
+    string cladire_persoana;
+    string nume_cladire;
+    uint16_t nr_maxpers,nr_etaje,nr_MaxPersEtaj,varsta;
+    double salariu;
+    string nume_pers;
+    vector<Building*>cladiri;
+    int cityHall=0,hospital=0,policeStation=0,house=0,block=0;
+    while(cin>>actiune){
+        if(actiune=="add"){
+            cin>>cladire_persoana;
+            if(cladire_persoana=="CityHall"){
+                cin>>nume_cladire;
+                cladiri.push_back(new CityHall(nume_cladire));
+                cityHall++;
+            }
+            if(cladire_persoana=="Hospital"){
+                cin>>nume_cladire;
+                cladiri.push_back(new Hospital(nume_cladire));
+                hospital++;
+            }
+            if(cladire_persoana=="PoliceStation"){
+                cin>>nume_cladire;
+                cladiri.push_back(new PoliceStation(nume_cladire));
+                policeStation++;
+            }
+            if(cladire_persoana=="House"){
+                cin>>nume_cladire>>nr_maxpers;
+                cladiri.push_back(new House(nume_cladire,nr_maxpers));
+                house++;
+            }
+            if(cladire_persoana=="Block"){
+                cin>>nume_cladire>>nr_etaje>>nr_MaxPersEtaj;
+                cladiri.push_back(new Block(nume_cladire,nr_etaje,nr_MaxPersEtaj));
+                block++;
+            }
+            if(cladire_persoana=="citizen"){
+                cin>>nume_pers>>varsta>>salariu>>nume_cladire;
+                for(uint16_t i=0;i<cladiri.size();i++)
+                    if(cladiri[i]->getBuildingName()==nume_cladire)
+                        cladiri[i]->add(Person(nume_pers,varsta,salariu));
+            }
+            if(cladire_persoana=="employee"){
+                cin>>nume_pers>>varsta>>salariu>>nume_cladire;
+                for(uint16_t i=0;i<cladiri.size();i++)
+                    if(cladiri[i]->getBuildingName()==nume_cladire){
+                        cladiri[i]=cladiri[i]->operator+(Person(nume_pers, varsta, salariu));}
+            }
+            if(cladire_persoana=="coordinator"){
+                cin>>nume_pers>>varsta>>salariu>>nume_cladire;
+                for(uint16_t i=0;i<cladiri.size();i++)
+                    if(cladiri[i]->getBuildingName()==nume_cladire&&(cladiri[i]->getCoordinator()==(Person()))==true){
+                        cladiri[i]=cladiri[i]->operator+(Person(nume_pers, varsta, salariu));}
+            }
+        }
+        else
+            if(actiune=="remove"){
+            cin>>cladire_persoana;
+            if(cladire_persoana=="citizen"){
+                cin>>nume_pers>>nume_cladire;
+                for(uint16_t i=0;i<cladiri.size();i++)
+                    if(cladiri[i]->getBuildingName()==nume_cladire){
+                        for(uint16_t j=0;j<cladiri[i]->getCitizensSize();j++){
+                            if(cladiri[i]->getCitizen (j).mName==nume_pers)
+                                cladiri[i]->remove(cladiri[i]->getCitizen (j));}}
+            }
+            if(cladire_persoana=="employee"){
+                cin>>nume_pers>>nume_cladire;
+                for(uint16_t i=0;i<cladiri.size();i++)
+                    if(cladiri[i]->getBuildingName()==nume_cladire){
+                        for(uint16_t j=0;j<cladiri[i]->getEmployeesSize();j++){
+                            if(cladiri[i]-> getEmployee (j).mName==nume_pers){
+                                cladiri[i]=cladiri[i]->operator-(cladiri[i]-> getEmployee (j)); 
+                            }}}
+            }
+            if(cladire_persoana=="coordinator"){
+                cin>>nume_pers>>nume_cladire;
+                for(uint16_t i=0;i<cladiri.size();i++)
+                    if(cladiri[i]->getBuildingName()==nume_cladire){
+                        cladiri[i]=cladiri[i]->operator-();}  
+            }
+            
+        }
+    }
+    if(cityHall>=3&&hospital>=2&&policeStation>=3&&house>=8&&block>=4)
+        cout<<"Type: Capital";
+    else
+        if(cityHall>=2&&hospital>=1&&policeStation>=2&&house>=4&&block>=1)
+            cout<<"Type: Town";
+        else
+            cout<<"Type: Village";
+    cout<<endl;
+    
+    cout<<"Number of patients in hospitals:"<<" ";
+    uint16_t nr_pacienti=0;
+    double sal_mediu_doctori=0,nr_doctori=0;
+    for(uint16_t i=0;i<cladiri.size();i++)
+        if(cladiri[i]->getType()=="Hospital"){
+            nr_pacienti=nr_pacienti+cladiri[i]->getCitizensSize();
+            for(uint16_t k=0;k<cladiri[i]->getEmployeesSize();k++){
+                    sal_mediu_doctori=sal_mediu_doctori+cladiri[i]-> getEmployee (k).mSalary;
+                    }
+           nr_doctori=nr_doctori+ cladiri[i]->getEmployeesSize();
+        }
+    cout<<nr_pacienti<<endl;
+    cout<<"Average salary for doctors:"<<" ";
+    if(nr_doctori==0)
+    cout<<0<<endl;
+    else
+    cout<<sal_mediu_doctori/nr_doctori<<endl;
+    cout<<"Average salary for cops:"<<" ";
+    
+    double sal_mediu_politisti=0,nr_politisti=0;
+    for(uint16_t i=0;i<cladiri.size();i++)
+        if(cladiri[i]->getType()=="PoliceStation"){
+            for(uint16_t k=0;k<cladiri[i]->getEmployeesSize();k++){
+                    sal_mediu_politisti=sal_mediu_politisti+cladiri[i]-> getEmployee (k).mSalary;
+                    }
+            nr_politisti=nr_politisti+ cladiri[i]->getEmployeesSize();
+        }
+    if(nr_politisti==0)
+    cout<<0<<endl;
+    else
+    cout<<sal_mediu_politisti/nr_politisti<<endl;
+    cout<<"Average salary for mayors: ";
+    double sal_mediu_primari=0,nr_primari=0;
+    for(uint16_t i=0;i<cladiri.size();i++)
+        if(cladiri[i]->getType()=="CityHall"){
+                sal_mediu_primari=sal_mediu_primari+cladiri[i]->getCoordinator().mSalary;
+                if(sal_mediu_primari!=sal_mediu_primari+cladiri[i]->getCoordinator().mSalary)
+                    nr_primari++;
+        }
+    if(nr_primari==0)
+    cout<<0<<endl;
+    else
+    cout<<sal_mediu_primari/nr_primari<<endl;
+    
+    cout<<"Average salary for city hall employees: ";
+    double sal_mediu_primarie_angajati=0,nr_primarie_angajati=0;
+    for(uint16_t i=0;i<cladiri.size();i++)
+        if(cladiri[i]->getType()=="CityHall"){
+            for(uint16_t k=0;k<cladiri[i]->getCitizensSize();k++){
+                    sal_mediu_primarie_angajati=sal_mediu_primarie_angajati+cladiri[i]-> getCitizen (k).mSalary;
+                }
+            nr_primarie_angajati=nr_primarie_angajati+ cladiri[i]->getCitizensSize();
+        }
+    if(nr_primarie_angajati==0)
+    cout<<0<<endl;
+    else
+    cout<<sal_mediu_primarie_angajati/nr_primarie_angajati<<endl;
+    
+    cout<<"Average age of busted in police stations: ";
+    double v_medie_pers_arestate=0,nr_pers_arestate=0;
+    for(uint16_t i=0;i<cladiri.size();i++)
+        if(cladiri[i]->getType()=="PoliceStation"){
+            for(uint16_t k=0;k<cladiri[i]->getCitizensSize();k++){
+                    v_medie_pers_arestate=v_medie_pers_arestate+cladiri[i]-> getCitizen (k).mAge;
+                   }
+            nr_pers_arestate=nr_pers_arestate+ cladiri[i]->getCitizensSize();
+        }
+    if(nr_pers_arestate==0)
+    cout<<0<<endl;
+    else
+    cout<<v_medie_pers_arestate/nr_pers_arestate<<endl;
+    
+    
+    for(uint16_t i=0;i<cladiri.size();i++){
+        if(cladiri[i]->getType()=="House"){
+            if((cladiri[i]->getCoordinator()==(Person()))==false)
+                cout<<"Number of people in House "<<cladiri[i]->getBuildingName()<<": "<<cladiri[i]->getCitizensSize()+1<<endl;
+            else
+                cout<<"Number of people in House "<<cladiri[i]->getBuildingName()<<": "<<cladiri[i]->getCitizensSize()<<endl;
+            
+        }
+        if(cladiri[i]->getType()=="Block"){
+            uint16_t nr_locuitori=0;
+            for(uint16_t k=0;k<cladiri[i]->getCitizensSize();k++)
+                if((cladiri[i]->getCitizen(k)==(Person()))==false)
+                    nr_locuitori++;
+            if((cladiri[i]->getCoordinator()==(Person()))==false)
+                cout<<"Number of people in Block "<<cladiri[i]->getBuildingName()<<": "<<nr_locuitori+1<<endl;
+            else
+                cout<<"Number of people in Block "<<cladiri[i]->getBuildingName()<<": "<<nr_locuitori<<endl;
+            
+        }
+        
+    }
+    set<string>h;
+    set<string>b;
+    cout<<"Administrators of house and block: ";
+    int ok=0;
+    for(uint16_t i=0;i<cladiri.size();i++){
+        if(cladiri[i]->getType()=="House") 
+            if((cladiri[i]->getCoordinator()==(Person()))==false){
+                h.insert(cladiri[i]->getCoordinator().mName);
+                }
+        if(cladiri[i]->getType()=="Block") 
+            if((cladiri[i]->getCoordinator()==(Person()))==false){
+                 b.insert(cladiri[i]->getCoordinator().mName);}
+    }
+                
+    for(auto l:h)
+        for(auto m:b)
+            if(l==m){
+                cout<<l<<" ";
+                ok++;
+            }
+    if(ok==0)
+        cout<<"Nobody";
+        
+    return 0;
+}
